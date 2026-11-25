@@ -1,1663 +1,590 @@
+
 <!DOCTYPE html>
-
 <html lang="ja">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>弟子屈、旅する。｜北海道の絶景と温泉</title>
-
-<meta name="description" content="札幌から旅する弟子屈町。摩周湖、屈斜路湖、硫黄山、神の子池、川湯温泉を巡る観光MAP。">
-
-<!-- Leaflet -->
+<meta name="description" content="札幌から旅する弟子屈町。摩周湖、屈斜路湖、硫黄山、神の子池、川湯温泉とグルメを巡る観光MAP。">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-
-<!-- Fonts -->
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
-
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-
 :root {
-
-  --ink: #233c35;
-
-  --green: #496b57;
-
-  --sage: #dfe8dc;
-
-  --cream: #f7f5ee;
-
-  --orange: #c67d4c;
-
-  --white: #fff;
-
+  --ink:#233c35;
+  --green:#496b57;
+  --sage:#dfe8dc;
+  --cream:#f7f5ee;
+  --orange:#c67d4c;
+  --white:#fff;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--cream);color:var(--ink);
+  font-family:"Noto Sans JP",sans-serif
+}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+.hero{
+  min-height:590px;position:relative;display:flex;align-items:center;
+  color:white;background:
+  linear-gradient(90deg,rgba(18,42,36,.72),rgba(18,42,36,.10)),
+  url("https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=2000&q=85")
+  center 55%/cover
+}
+.hero-inner{max-width:1200px;width:100%;margin:auto;padding:70px 32px}
+.hero-label{letter-spacing:.22em;font-size:12px;margin-bottom:24px}
+.hero h1{
+  font-family:"Noto Serif JP",serif;font-size:clamp(40px,7vw,76px);
+  font-weight:500;line-height:1.45;margin:0;letter-spacing:.08em
+}
+.hero h1 span{display:block;font-size:.45em;letter-spacing:.2em;margin-top:14px}
+.hero p{margin-top:28px;line-height:2;font-size:15px}
+.hero-btn{
+  display:inline-block;margin-top:25px;text-decoration:none;
+  padding:14px 30px;border:1px solid white;border-radius:30px;transition:.3s
+}
+.hero-btn:hover{background:white;color:var(--ink)}
+.nav{
+  background:#fff;padding:16px 24px;display:flex;justify-content:center;
+  flex-wrap:wrap;gap:28px;position:sticky;top:0;z-index:900;
+  box-shadow:0 2px 10px #00000008
+}
+.nav a{text-decoration:none;font-size:13px;letter-spacing:.1em}
+.section{max-width:1200px;margin:auto;padding:90px 24px}
+.section-heading{text-align:center;margin-bottom:35px}
+.section-heading .en{color:var(--orange);font-size:11px;letter-spacing:.25em;text-transform:uppercase}
+.section-heading h2{
+  font-family:"Noto Serif JP",serif;font-size:32px;font-weight:500;
+  letter-spacing:.12em;margin:10px 0
+}
+.section-heading p{font-size:14px;line-height:1.9;color:#687970}
+.map-layout{display:grid;grid-template-columns:340px 1fr;gap:22px}
+.spot-list{
+  background:white;padding:20px;border-radius:14px;
+  max-height:600px;overflow-y:auto
+}
+.spot-list h3{font-family:"Noto Serif JP",serif;margin:5px 0 18px;font-weight:500}
+.spot-item{
+  display:flex;gap:13px;padding:12px 8px;border-bottom:1px solid #eee;
+  cursor:pointer;transition:.2s
+}
+.spot-item:hover,.spot-item.active{background:var(--sage);border-radius:10px}
+.spot-item img{width:92px;height:74px;object-fit:cover;border-radius:8px}
+.spot-item .name{font-weight:700;font-size:14px;margin-top:6px}
+.spot-item .sub{font-size:11px;color:#78867d;margin-top:7px}
+.spot-item .type{
+  font-size:10px;color:var(--orange);margin-top:4px
+}
+#map{width:100%;height:600px;border-radius:14px;overflow:hidden;z-index:1}
+.map-hint{font-size:12px;text-align:center;color:#738178;margin-top:15px}
+.spot-card{
+  display:none;margin-top:25px;background:white;border-radius:16px;
+  overflow:hidden;box-shadow:0 6px 28px #233c3510;animation:fadeIn .35s ease
+}
+.spot-card.show{display:grid;grid-template-columns:1fr 1fr}
+.spot-card-image{
+  position:relative;min-height:320px;cursor:zoom-in;overflow:hidden
+}
+.spot-card-image img{
+  width:100%;height:100%;min-height:320px;object-fit:cover;transition:transform .4s
+}
+.spot-card-image:hover img{transform:scale(1.04)}
+.zoom-label{
+  position:absolute;bottom:15px;right:15px;background:rgba(0,0,0,.55);
+  color:white;font-size:12px;padding:8px 12px;border-radius:20px
+}
+.spot-card-content{padding:38px}
+.spot-card-content .tag{color:var(--orange);font-size:11px;letter-spacing:.2em}
+.spot-card-content h3{
+  font-family:"Noto Serif JP",serif;font-size:28px;font-weight:500;margin:12px 0 18px
+}
+.spot-card-content p{font-size:14px;line-height:2.1;color:#5d6e64}
+.access{background:#f5f4ee;padding:18px;margin-top:20px;border-radius:10px;font-size:13px;line-height:1.9}
+.map-link{
+  display:inline-block;margin-top:22px;text-decoration:none;
+  border-bottom:1px solid var(--green);padding-bottom:5px;font-size:13px;color:var(--green)
+}
+.close-card{float:right;border:0;background:transparent;color:#78867d;font-size:13px}
+.route-section{background:#e7ece4}
+.route-inner{max-width:1200px;margin:auto;padding:90px 24px}
+.route-intro{text-align:center;max-width:700px;margin:0 auto 40px}
+.route-intro h2{font-family:"Noto Serif JP",serif;font-weight:500;font-size:34px}
+.route-intro p{font-size:14px;line-height:2;color:#61736a}
+.route-card{background:white;border-radius:18px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr}
+.route-photo{
+  min-height:400px;background:
+  url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=85")
+  center/cover
+}
+.route-details{padding:35px}
+.route-details h3{font-family:"Noto Serif JP",serif;font-size:25px;font-weight:500}
+.route-meta{color:var(--orange);font-size:13px;margin:14px 0 25px}
+.route-stop{display:flex;gap:15px;align-items:flex-start;margin:18px 0}
+.route-number{
+  flex-shrink:0;width:32px;height:32px;background:var(--green);color:white;
+  border-radius:50%;display:grid;place-items:center;font-size:13px
+}
+.route-stop strong{display:block;margin-bottom:5px}
+.route-stop p{font-size:12px;line-height:1.8;color:#75837a;margin:0}
+.route-btn{
+  border:none;background:var(--green);color:white;padding:14px 28px;
+  border-radius:30px;margin-top:25px;transition:.3s
+}
+.route-btn:hover{background:var(--ink)}
+.about{text-align:center;padding:70px 24px;background:var(--ink);color:white}
+.about h2{font-family:"Noto Serif JP",serif;font-weight:500;font-size:28px}
+.about p{font-size:13px;line-height:2.1;color:#d5dfd7}
+footer{padding:28px;text-align:center;font-size:11px;color:#7c8980;letter-spacing:.1em}
+.marker-pin{
+  background:var(--green);color:white;border:3px solid white;
+  width:38px;height:38px;border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);box-shadow:0 4px 10px #0003;
+  display:flex;justify-content:center;align-items:center
+}
+.marker-pin.restaurant{background:var(--orange)}
+.marker-pin span{transform:rotate(45deg);font-weight:bold;font-size:14px}
+.marker-pin.selected{transform:rotate(-45deg) scale(1.2)}
+.leaflet-popup-content-wrapper{border-radius:12px;font-family:"Noto Sans JP",sans-serif}
+.leaflet-popup-content{font-size:13px;line-height:1.8}
+.lightbox{
+  display:none;position:fixed;inset:0;background:rgba(12,22,18,.92);
+  z-index:3000;align-items:center;justify-content:center;padding:20px
+}
+.lightbox.show{display:flex}
+.lightbox img{max-width:95%;max-height:90vh;object-fit:contain;border-radius:10px}
+.lightbox-close{
+  position:absolute;top:20px;right:25px;color:white;font-size:32px;
+  border:none;background:none
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:900px){
+  .map-layout{grid-template-columns:1fr}
+  .spot-list{max-height:none}
+  #map{height:480px}
+  .spot-card.show,.route-card{grid-template-columns:1fr}
+  .spot-card-image img{min-height:260px}
+  .route-photo{min-height:300px}
+}
+@media(max-width:600px){
+  .hero{min-height:500px}
+  .hero-inner{padding:50px 22px}
+  .hero h1{font-size:44px}
+  .nav{gap:15px;padding:14px 10px}
+  .nav a{font-size:11px}
+  .section,.route-inner{padding:65px 16px}
+  .section-heading h2{font-size:25px}
+  #map{height:420px}
+  .spot-card-content{padding:25px}
+  .spot-card-content h3{font-size:24px}
+  .route-details{padding:25px}
 }
-
-* {
-
-  box-sizing: border-box;
-
-}
-
-html {
-
-  scroll-behavior: smooth;
-
-}
-
-body {
-
-  margin: 0;
-
-  background: var(--cream);
-
-  color: var(--ink);
-
-  font-family: "Noto Sans JP", sans-serif;
-
-}
-
-a {
-
-  color: inherit;
-
-}
-
-button {
-
-  font: inherit;
-
-  cursor: pointer;
-
-}
-
-.hero {
-
-  min-height: 590px;
-
-  position: relative;
-
-  display: flex;
-
-  align-items: center;
-
-  color: white;
-
-  background:
-
-    linear-gradient(90deg, rgba(18,42,36,.72), rgba(18,42,36,.10)),
-
-    url("https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=2000&q=85")
-
-    center 55%/cover;
-
-}
-
-.hero-inner {
-
-  max-width: 1200px;
-
-  width: 100%;
-
-  margin: auto;
-
-  padding: 70px 32px;
-
-}
-
-.hero-label {
-
-  letter-spacing: .22em;
-
-  font-size: 12px;
-
-  margin-bottom: 24px;
-
-}
-
-.hero h1 {
-
-  font-family: "Noto Serif JP", serif;
-
-  font-size: clamp(40px, 7vw, 76px);
-
-  font-weight: 500;
-
-  line-height: 1.45;
-
-  margin: 0;
-
-  letter-spacing: .08em;
-
-}
-
-.hero h1 span {
-
-  display: block;
-
-  font-size: .45em;
-
-  letter-spacing: .2em;
-
-  margin-top: 14px;
-
-}
-
-.hero p {
-
-  margin-top: 28px;
-
-  line-height: 2;
-
-  font-size: 15px;
-
-}
-
-.hero-btn {
-
-  display: inline-block;
-
-  margin-top: 25px;
-
-  text-decoration: none;
-
-  padding: 14px 30px;
-
-  border: 1px solid white;
-
-  border-radius: 30px;
-
-  transition: .3s;
-
-}
-
-.hero-btn:hover {
-
-  background: white;
-
-  color: var(--ink);
-
-}
-
-.nav {
-
-  background: #fff;
-
-  padding: 16px 24px;
-
-  display: flex;
-
-  justify-content: center;
-
-  flex-wrap: wrap;
-
-  gap: 28px;
-
-  position: sticky;
-
-  top: 0;
-
-  z-index: 900;
-
-  box-shadow: 0 2px 10px #00000008;
-
-}
-
-.nav a {
-
-  text-decoration: none;
-
-  font-size: 13px;
-
-  letter-spacing: .1em;
-
-}
-
-.section {
-
-  max-width: 1200px;
-
-  margin: auto;
-
-  padding: 90px 24px;
-
-}
-
-.section-heading {
-
-  text-align: center;
-
-  margin-bottom: 35px;
-
-}
-
-.section-heading .en {
-
-  color: var(--orange);
-
-  font-size: 11px;
-
-  letter-spacing: .25em;
-
-  text-transform: uppercase;
-
-}
-
-.section-heading h2 {
-
-  font-family: "Noto Serif JP", serif;
-
-  font-size: 32px;
-
-  font-weight: 500;
-
-  letter-spacing: .12em;
-
-  margin: 10px 0;
-
-}
-
-.section-heading p {
-
-  font-size: 14px;
-
-  line-height: 1.9;
-
-  color: #687970;
-
-}
-
-.map-layout {
-
-  display: grid;
-
-  grid-template-columns: 340px 1fr;
-
-  gap: 22px;
-
-}
-
-.spot-list {
-
-  background: white;
-
-  padding: 20px;
-
-  border-radius: 14px;
-
-  max-height: 600px;
-
-  overflow-y: auto;
-
-}
-
-.spot-list h3 {
-
-  font-family: "Noto Serif JP", serif;
-
-  margin: 5px 0 18px;
-
-  font-weight: 500;
-
-}
-
-.spot-item {
-
-  display: flex;
-
-  gap: 13px;
-
-  padding: 12px 8px;
-
-  border-bottom: 1px solid #eee;
-
-  cursor: pointer;
-
-  transition: .2s;
-
-}
-
-.spot-item:hover,
-
-.spot-item.active {
-
-  background: var(--sage);
-
-  border-radius: 10px;
-
-}
-
-.spot-item img {
-
-  width: 92px;
-
-  height: 74px;
-
-  object-fit: cover;
-
-  border-radius: 8px;
-
-}
-
-.spot-item .name {
-
-  font-weight: 700;
-
-  font-size: 14px;
-
-  margin-top: 6px;
-
-}
-
-.spot-item .sub {
-
-  font-size: 11px;
-
-  color: #78867d;
-
-  margin-top: 7px;
-
-}
-
-#map {
-
-  width: 100%;
-
-  height: 600px;
-
-  border-radius: 14px;
-
-  overflow: hidden;
-
-  z-index: 1;
-
-}
-
-.map-hint {
-
-  font-size: 12px;
-
-  text-align: center;
-
-  color: #738178;
-
-  margin-top: 15px;
-
-}
-
-.spot-card {
-
-  display: none;
-
-  margin-top: 25px;
-
-  background: white;
-
-  border-radius: 16px;
-
-  overflow: hidden;
-
-  box-shadow: 0 6px 28px #233c3510;
-
-  animation: fadeIn .35s ease;
-
-}
-
-.spot-card.show {
-
-  display: grid;
-
-  grid-template-columns: 1fr 1fr;
-
-}
-
-.spot-card-image {
-
-  position: relative;
-
-  min-height: 320px;
-
-  cursor: zoom-in;
-
-  overflow: hidden;
-
-}
-
-.spot-card-image img {
-
-  width: 100%;
-
-  height: 100%;
-
-  min-height: 320px;
-
-  object-fit: cover;
-
-  transition: transform .4s;
-
-}
-
-.spot-card-image:hover img {
-
-  transform: scale(1.04);
-
-}
-
-.zoom-label {
-
-  position: absolute;
-
-  bottom: 15px;
-
-  right: 15px;
-
-  background: rgba(0,0,0,.55);
-
-  color: white;
-
-  font-size: 12px;
-
-  padding: 8px 12px;
-
-  border-radius: 20px;
-
-}
-
-.spot-card-content {
-
-  padding: 38px;
-
-}
-
-.spot-card-content .tag {
-
-  color: var(--orange);
-
-  font-size: 11px;
-
-  letter-spacing: .2em;
-
-}
-
-.spot-card-content h3 {
-
-  font-family: "Noto Serif JP", serif;
-
-  font-size: 28px;
-
-  font-weight: 500;
-
-  margin: 12px 0 18px;
-
-}
-
-.spot-card-content p {
-
-  font-size: 14px;
-
-  line-height: 2.1;
-
-  color: #5d6e64;
-
-}
-
-.access {
-
-  background: #f5f4ee;
-
-  padding: 18px;
-
-  margin-top: 20px;
-
-  border-radius: 10px;
-
-  font-size: 13px;
-
-  line-height: 1.9;
-
-}
-
-.map-link {
-
-  display: inline-block;
-
-  margin-top: 22px;
-
-  text-decoration: none;
-
-  border-bottom: 1px solid var(--green);
-
-  padding-bottom: 5px;
-
-  font-size: 13px;
-
-  color: var(--green);
-
-}
-
-.close-card {
-
-  float: right;
-
-  border: 0;
-
-  background: transparent;
-
-  color: #78867d;
-
-  font-size: 13px;
-
-}
-
-.route-section {
-
-  background: #e7ece4;
-
-}
-
-.route-inner {
-
-  max-width: 1200px;
-
-  margin: auto;
-
-  padding: 90px 24px;
-
-}
-
-.route-intro {
-
-  text-align: center;
-
-  max-width: 700px;
-
-  margin: 0 auto 40px;
-
-}
-
-.route-intro h2 {
-
-  font-family: "Noto Serif JP", serif;
-
-  font-weight: 500;
-
-  font-size: 34px;
-
-}
-
-.route-intro p {
-
-  font-size: 14px;
-
-  line-height: 2;
-
-  color: #61736a;
-
-}
-
-.route-card {
-
-  background: white;
-
-  border-radius: 18px;
-
-  overflow: hidden;
-
-  display: grid;
-
-  grid-template-columns: 1fr 1fr;
-
-}
-
-.route-photo {
-
-  min-height: 400px;
-
-  background:
-
-    url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=85")
-
-    center/cover;
-
-}
-
-.route-details {
-
-  padding: 35px;
-
-}
-
-.route-details h3 {
-
-  font-family: "Noto Serif JP", serif;
-
-  font-size: 25px;
-
-  font-weight: 500;
-
-}
-
-.route-meta {
-
-  color: var(--orange);
-
-  font-size: 13px;
-
-  margin: 14px 0 25px;
-
-}
-
-.route-stop {
-
-  display: flex;
-
-  gap: 15px;
-
-  align-items: flex-start;
-
-  margin: 18px 0;
-
-}
-
-.route-number {
-
-  flex-shrink: 0;
-
-  width: 32px;
-
-  height: 32px;
-
-  background: var(--green);
-
-  color: white;
-
-  border-radius: 50%;
-
-  display: grid;
-
-  place-items: center;
-
-  font-size: 13px;
-
-}
-
-.route-stop strong {
-
-  display: block;
-
-  margin-bottom: 5px;
-
-}
-
-.route-stop p {
-
-  font-size: 12px;
-
-  line-height: 1.8;
-
-  color: #75837a;
-
-  margin: 0;
-
-}
-
-.route-btn {
-
-  border: none;
-
-  background: var(--green);
-
-  color: white;
-
-  padding: 14px 28px;
-
-  border-radius: 30px;
-
-  margin-top: 25px;
-
-  transition: .3s;
-
-}
-
-.route-btn:hover {
-
-  background: var(--ink);
-
-}
-
-.about {
-
-  text-align: center;
-
-  padding: 70px 24px;
-
-  background: var(--ink);
-
-  color: white;
-
-}
-
-.about h2 {
-
-  font-family: "Noto Serif JP", serif;
-
-  font-weight: 500;
-
-  font-size: 28px;
-
-}
-
-.about p {
-
-  font-size: 13px;
-
-  line-height: 2.1;
-
-  color: #d5dfd7;
-
-}
-
-footer {
-
-  padding: 28px;
-
-  text-align: center;
-
-  font-size: 11px;
-
-  color: #7c8980;
-
-  letter-spacing: .1em;
-
-}
-
-.marker-pin {
-
-  background: var(--green);
-
-  color: white;
-
-  border: 3px solid white;
-
-  width: 38px;
-
-  height: 38px;
-
-  border-radius: 50% 50% 50% 0;
-
-  transform: rotate(-45deg);
-
-  box-shadow: 0 4px 10px #0003;
-
-  display: flex;
-
-  justify-content: center;
-
-  align-items: center;
-
-}
-
-.marker-pin span {
-
-  transform: rotate(45deg);
-
-  font-weight: bold;
-
-  font-size: 14px;
-
-}
-
-.marker-pin.selected {
-
-  background: var(--orange);
-
-  transform: rotate(-45deg) scale(1.2);
-
-}
-
-.leaflet-popup-content-wrapper {
-
-  border-radius: 12px;
-
-  font-family: "Noto Sans JP", sans-serif;
-
-}
-
-.leaflet-popup-content {
-
-  font-size: 13px;
-
-  line-height: 1.8;
-
-}
-
-.lightbox {
-
-  display: none;
-
-  position: fixed;
-
-  inset: 0;
-
-  background: rgba(12,22,18,.92);
-
-  z-index: 3000;
-
-  align-items: center;
-
-  justify-content: center;
-
-  padding: 20px;
-
-}
-
-.lightbox.show {
-
-  display: flex;
-
-}
-
-.lightbox img {
-
-  max-width: 95%;
-
-  max-height: 90vh;
-
-  object-fit: contain;
-
-  border-radius: 10px;
-
-}
-
-.lightbox-close {
-
-  position: absolute;
-
-  top: 20px;
-
-  right: 25px;
-
-  color: white;
-
-  font-size: 32px;
-
-  border: none;
-
-  background: none;
-
-}
-
-@keyframes fadeIn {
-
-  from {opacity:0; transform:translateY(8px);}
-
-  to {opacity:1; transform:translateY(0);}
-
-}
-
-@media(max-width:900px) {
-
-  .map-layout {
-
-    grid-template-columns: 1fr;
-
-  }
-
-  .spot-list {
-
-    max-height: none;
-
-  }
-
-  #map {
-
-    height: 480px;
-
-  }
-
-  .spot-card.show,
-
-  .route-card {
-
-    grid-template-columns: 1fr;
-
-  }
-
-  .spot-card-image img {
-
-    min-height: 260px;
-
-  }
-
-  .route-photo {
-
-    min-height: 300px;
-
-  }
-
-}
-
-@media(max-width:600px) {
-
-  .hero {
-
-    min-height: 500px;
-
-  }
-
-  .hero-inner {
-
-    padding: 50px 22px;
-
-  }
-
-  .hero h1 {
-
-    font-size: 44px;
-
-  }
-
-  .nav {
-
-    gap: 15px;
-
-    padding: 14px 10px;
-
-  }
-
-  .nav a {
-
-    font-size: 11px;
-
-  }
-
-  .section,
-
-  .route-inner {
-
-    padding: 65px 16px;
-
-  }
-
-  .section-heading h2 {
-
-    font-size: 25px;
-
-  }
-
-  #map {
-
-    height: 420px;
-
-  }
-
-  .spot-card-content {
-
-    padding: 25px;
-
-  }
-
-  .spot-card-content h3 {
-
-    font-size: 24px;
-
-  }
-
-  .route-details {
-
-    padding: 25px;
-
-  }
-
-}
-
 </style>
-
 </head>
 
 <body>
 
-<!-- HERO -->
-
 <header class="hero">
-
   <div class="hero-inner">
-
     <div class="hero-label">HOKKAIDO · TESHIKAGA TRAVEL</div>
-
-    <h1>
-
-      弟子屈、旅する。
-
-      <span>湖と大地と温泉に出会う旅</span>
-
-    </h1>
-
+    <h1>弟子屈、旅する。<span>湖と大地と温泉に出会う旅</span></h1>
     <p>
-
       札幌から少し遠くへ。<br>
-
       心をほどく、北海道の絶景が待っている。
-
     </p>
-
     <a href="#map-section" class="hero-btn">旅のスポットを探す ↓</a>
-
   </div>
-
 </header>
 
 <nav class="nav">
-
-  <a href="#map-section">観光MAP</a>
-
+  <a href="#map-section">観光MAP・グルメ</a>
   <a href="#route">モデルコース</a>
-
   <a href="#about">弟子屈の魅力</a>
-
 </nav>
 
-<!-- MAP -->
-
 <section class="section" id="map-section">
-
   <div class="section-heading">
-
     <div class="en">Explore Teshikaga</div>
-
     <h2>弟子屈を旅するMAP</h2>
-
     <p>
-
       気になるピンをタップして、<br>
-
       あなただけの旅を見つけよう。
-
     </p>
-
   </div>
 
   <div class="map-layout">
-
     <aside class="spot-list">
-
-      <h3>おすすめスポット</h3>
-
+      <h3>観光スポット・飲食店</h3>
       <div id="spot-list-items"></div>
-
     </aside>
-
     <div id="map"></div>
-
   </div>
 
   <div class="map-hint">
-
-    <span>📍</span> 地図のピンをタップすると詳細が表示されます
-
+    📍 地図のピンをタップすると詳細が表示されます
   </div>
-
-  <!-- Detail Card -->
 
   <div class="spot-card" id="spot-card">
-
     <div class="spot-card-image" id="card-image-wrap" onclick="openLightbox()">
-
       <img id="card-image" src="" alt="">
-
       <div class="zoom-label">写真を拡大 ↗</div>
-
     </div>
-
     <div class="spot-card-content">
-
       <button class="close-card" onclick="closeCard()">閉じる ×</button>
-
       <div class="tag" id="card-tag"></div>
-
       <h3 id="card-title"></h3>
-
       <p id="card-description"></p>
-
       <div class="access" id="card-access"></div>
-
       <a id="card-map-link" class="map-link" target="_blank" rel="noopener">
-
         Googleマップで見る ↗
-
       </a>
-
     </div>
-
   </div>
-
 </section>
 
-<!-- ROUTE -->
-
 <section class="route-section" id="route">
-
   <div class="route-inner">
-
     <div class="route-intro">
-
       <div class="section-heading">
-
         <div class="en">Road Trip</div>
-
         <h2>弟子屈を巡る旅</h2>
-
       </div>
-
       <p>
-
         絶景を巡り、温泉に浸かり、北海道の自然を味わう。<br>
-
         旅のイメージを膨らませるモデルコース。
-
       </p>
-
     </div>
 
     <div class="route-card">
-
       <div class="route-photo"></div>
-
       <div class="route-details">
-
         <h3>絶景と温泉を巡る旅</h3>
-
-        <div class="route-meta">
-
-          DAY 1 · ドライブ旅
-
-        </div>
-
+        <div class="route-meta">DAY 1 · ドライブ旅</div>
         <div id="route-stops"></div>
-
-        <p style="font-size:12px;line-height:1.8;color:#77847b;">
-
+        <p style="font-size:12px;line-height:1.8;color:#77847b">
           ※移動時間や道路状況は季節によって変わります。
-
-          札幌からの移動は長距離となるため、出発時間や宿泊を含めた計画をおすすめします。
-
+          札幌からの移動は長距離となるため、
+          出発時間や宿泊を含めた計画をおすすめします。
         </p>
-
         <button class="route-btn" onclick="showRoute()">
-
           モデルコースを地図で見る →
-
         </button>
-
       </div>
-
     </div>
-
   </div>
-
 </section>
-
-<!-- ABOUT -->
 
 <section class="about" id="about">
-
   <h2>弟子屈という、北海道の宝箱。</h2>
-
   <p>
-
     摩周湖の青、屈斜路湖の広大さ、硫黄山の息吹。<br>
-
     ここには、北海道の自然を深く感じられる景色がある。<br>
-
+    そして旅の途中には、地元の味との出会いも。<br>
     次の休日は、弟子屈へ。
-
   </p>
-
 </section>
 
-<footer>
-
-  TESHIKAGA TRAVEL MAP · HOKKAIDO
-
-</footer>
-
-<!-- LIGHTBOX -->
+<footer>TESHIKAGA TRAVEL MAP · HOKKAIDO</footer>
 
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-
   <button class="lightbox-close" aria-label="閉じる">×</button>
-
   <img id="lightbox-image" src="" alt="">
-
 </div>
-
-<!-- Leaflet JS -->
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-
 const spots = [
-
   {
-
-    id: 1,
-
-    name: "摩周湖",
-
-    subtitle: "神秘の青に出会う",
-
-    tag: "LAKE · 絶景",
-
-    lat: 43.5667,
-
-    lng: 144.5231,
-
-    image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=85",
-
-    description: "世界有数の透明度を誇る神秘的な湖。深い青色に輝く湖面と、周囲の山々が織りなす景色は、訪れる人を魅了します。展望台から眺める摩周湖は、北海道を代表する絶景のひとつです。",
-
-    access: "弟子屈町中心部から車で約20〜30分（目安）。展望台や道路状況により異なります。",
-
-    map: "https://www.google.com/maps/search/?api=1&query=摩周湖",
-
-    imageAlt: "摩周湖の風景"
-
+    id:1,type:"観光",
+    name:"摩周湖",subtitle:"神秘の青に出会う",
+    tag:"LAKE · 絶景",
+    lat:43.5667,lng:144.5231,
+    image:"https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=85",
+    description:"世界有数の透明度を誇る神秘的な湖。深い青色に輝く湖面と、周囲の山々が織りなす景色は、訪れる人を魅了します。展望台から眺める摩周湖は、北海道を代表する絶景のひとつです。",
+    access:"弟子屈町中心部から車で約20〜30分（目安）。展望台や道路状況により異なります。",
+    map:"https://www.google.com/maps/search/?api=1&query=摩周湖",
+    imageAlt:"摩周湖の風景"
+  },
+  {
+    id:2,type:"観光",
+    name:"屈斜路湖",subtitle:"大自然に包まれる",
+    tag:"LAKE · 自然",
+    lat:43.6150,lng:144.3370,
+    image:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1200&q=85",
+    description:"日本最大級のカルデラ湖。湖畔では砂湯や温泉、自然散策などを楽しめます。広大な湖と周囲の山々を眺めながら、ゆったりと北海道らしい時間を過ごせる場所です。",
+    access:"弟子屈町中心部から車で約20〜40分（目安）。訪問する湖畔エリアによって異なります。",
+    map:"https://www.google.com/maps/search/?api=1&query=屈斜路湖",
+    imageAlt:"屈斜路湖周辺の自然"
+  },
+  {
+    id:3,type:"観光",
+    name:"硫黄山",subtitle:"地球の息吹を感じる",
+    tag:"VOLCANO · 火山",
+    lat:43.5700,lng:144.4430,
+    image:"https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85",
+    description:"白い噴気が立ち上る活火山。荒々しい岩肌と硫黄の香り、噴気孔から立ち上る蒸気が、火山の迫力を伝えてくれます。",
+    access:"弟子屈町中心部から車で約15〜20分（目安）。立入可能エリアは現地の案内に従ってください。",
+    map:"https://www.google.com/maps/search/?api=1&query=硫黄山+北海道",
+    imageAlt:"山と火山の景色"
+  },
+  {
+    id:4,type:"観光",
+    name:"神の子池",subtitle:"青く透き通る秘境",
+    tag:"POND · 神秘",
+    lat:43.5650,lng:144.5680,
+    image:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=85",
+    description:"森の奥にひっそりと佇む、澄みきった青い池。水中の倒木が腐らずに残る幻想的な景色と、透明度の高い水が魅力です。",
+    access:"周辺市街地から車でのアクセスが必要です。未舗装路や季節の道路状況を事前に確認してください。",
+    map:"https://www.google.com/maps/search/?api=1&query=神の子池+北海道",
+    imageAlt:"森の湖"
+  },
+  {
+    id:5,type:"観光",
+    name:"川湯温泉",subtitle:"旅の疲れを癒す",
+    tag:"ONSEN · 温泉",
+    lat:43.6360,lng:144.4640,
+    image:"https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=85",
+    description:"硫黄山の恵みを感じる温泉街。酸性の温泉と温泉情緒のある街並みが魅力です。自然散策のあとに温泉でゆっくりと過ごし、旅の疲れを癒してみませんか。",
+    access:"JR川湯温泉駅から車やバスで移動。町内各地からのアクセスは場所によって異なります。",
+    map:"https://www.google.com/maps/search/?api=1&query=川湯温泉+弟子屈",
+    imageAlt:"温泉の風景"
   },
 
+  // 飲食店
+
   {
-
-    id: 2,
-
-    name: "屈斜路湖",
-
-    subtitle: "大自然に包まれる",
-
-    tag: "LAKE · 自然",
-
-    lat: 43.6150,
-
-    lng: 144.3370,
-
-    image: "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1200&q=85",
-
-    description: "日本最大級のカルデラ湖。湖畔では砂湯や温泉、自然散策などを楽しめます。広大な湖と周囲の山々を眺めながら、ゆったりと北海道らしい時間を過ごせる場所です。",
-
-    access: "弟子屈町中心部から車で約20〜40分（目安）。訪問する湖畔エリアによって異なります。",
-
-    map: "https://www.google.com/maps/search/?api=1&query=屈斜路湖",
-
-    imageAlt: "屈斜路湖周辺の自然"
-
+    id:6,type:"飲食店",
+    name:"食堂と喫茶 poppotei",
+    subtitle:"摩周駅前で豚丼",
+    tag:"FOOD · 豚丼・食堂",
+    lat:43.4856,lng:144.4598,
+    image:"https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=85",
+    description:"JR摩周駅前にある食堂と喫茶。弟子屈で生まれた豚丼をはじめ、地元食材を使った料理などが楽しめます。ドライブや鉄道旅の食事におすすめです。",
+    access:"北海道川上郡弟子屈町朝日1丁目7-18。JR摩周駅前。",
+    map:"https://www.google.com/maps/search/?api=1&query=食堂と喫茶poppotei+弟子屈",
+    imageAlt:"豚丼などの食堂料理"
   },
-
   {
-
-    id: 3,
-
-    name: "硫黄山",
-
-    subtitle: "地球の息吹を感じる",
-
-    tag: "VOLCANO · 火山",
-
-    lat: 43.5700,
-
-    lng: 144.4430,
-
-    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85",
-
-    description: "白い噴気が立ち上る活火山。荒々しい岩肌と硫黄の香り、噴気孔から立ち上る蒸気が、火山の迫力を伝えてくれます。周囲の自然とのコントラストも印象的です。",
-
-    access: "弟子屈町中心部から車で約15〜20分（目安）。立入可能エリアは現地の案内に従ってください。",
-
-    map: "https://www.google.com/maps/search/?api=1&query=硫黄山+北海道",
-
-    imageAlt: "山と火山の景色"
-
+    id:7,type:"飲食店",
+    name:"弟子屈ラーメン総本店",
+    subtitle:"北海道の味を楽しむ",
+    tag:"FOOD · ラーメン",
+    lat:43.4850,lng:144.4620,
+    image:"https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1200&q=85",
+    description:"弟子屈町を代表するラーメン店。北海道の食材や魚介の旨みを生かしたラーメンを楽しめます。旅の途中に立ち寄りたい一軒です。",
+    access:"弟子屈町内。所在地・営業時間は訪問前にご確認ください。",
+    map:"https://www.google.com/maps/search/?api=1&query=弟子屈ラーメン総本店",
+    imageAlt:"ラーメン"
   },
-
   {
-
-    id: 4,
-
-    name: "神の子池",
-
-    subtitle: "青く透き通る秘境",
-
-    tag: "POND · 神秘",
-
-    lat: 43.5650,
-
-    lng: 144.5680,
-
-    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=85",
-
-    description: "森の奥にひっそりと佇む、澄みきった青い池。水中の倒木が腐らずに残る幻想的な景色と、透明度の高い水が魅力です。季節や天候によって色合いも変わります。",
-
-    access: "周辺市街地から車でのアクセスが必要です。未舗装路や季節の道路状況を事前に確認してください。",
-
-    map: "https://www.google.com/maps/search/?api=1&query=神の子池+北海道",
-
-    imageAlt: "森の湖"
-
+    id:8,type:"飲食店",
+    name:"すずめ食堂＆バル",
+    subtitle:"素朴で優しいごはん",
+    tag:"FOOD · 食堂・バル",
+    lat:43.6365,lng:144.4630,
+    image:"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=85",
+    description:"川湯温泉街にある食堂＆バル。素朴で体に優しいごはんをコンセプトに、無国籍料理などを提供。昼の食事から夜のバル利用まで楽しめるお店です。",
+    access:"北海道川上郡弟子屈町川湯温泉3丁目1-1。営業時間・定休日は事前にご確認ください。",
+    map:"https://www.google.com/maps/search/?api=1&query=すずめ食堂＆バル+川湯温泉",
+    imageAlt:"食堂の料理"
   },
-
   {
-
-    id: 5,
-
-    name: "川湯温泉",
-
-    subtitle: "旅の疲れを癒す",
-
-    tag: "ONSEN · 温泉",
-
-    lat: 43.6360,
-
-    lng: 144.4640,
-
-    image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=85",
-
-    description: "硫黄山の恵みを感じる温泉街。酸性の温泉と温泉情緒のある街並みが魅力です。自然散策のあとに温泉でゆっくりと過ごし、旅の疲れを癒してみませんか。",
-
-    access: "JR川湯温泉駅から車やバスで移動。町内各地からのアクセスは場所によって異なります。",
-
-    map: "https://www.google.com/maps/search/?api=1&query=川湯温泉+弟子屈",
-
-    imageAlt: "温泉の風景"
-
+    id:9,type:"飲食店",
+    name:"森のホール",
+    subtitle:"カフェと季節のスイーツ",
+    tag:"FOOD · カフェ",
+    lat:43.6150,lng:144.4600,
+    image:"https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=85",
+    description:"川湯温泉駅前のカフェ。季節のフルーツを使ったスイーツやランチなどを楽しめます。駅周辺散策の休憩にもおすすめです。",
+    access:"北海道川上郡弟子屈町川湯駅前2。JR川湯温泉駅周辺。",
+    map:"https://www.google.com/maps/search/?api=1&query=森のホール+川湯温泉",
+    imageAlt:"カフェとコーヒー"
+  },
+  {
+    id:10,type:"飲食店",
+    name:"お多福食堂",
+    subtitle:"昔ながらの食堂",
+    tag:"FOOD · 食堂",
+    lat:43.6362,lng:144.4645,
+    image:"https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=85",
+    description:"川湯温泉街にある昔ながらの食堂。気軽に食事を楽しめるお店。地元で親しまれる食堂の味を旅の途中に味わってみませんか。",
+    access:"北海道川上郡弟子屈町川湯温泉1丁目4番23号。営業時間などは事前にご確認ください。",
+    map:"https://www.google.com/maps/search/?api=1&query=お多福食堂+川湯温泉",
+    imageAlt:"食堂の料理"
   }
-
 ];
 
-const routeOrder = [1, 3, 5, 2, 4];
+const routeOrder=[1,3,5,2,4];
 
-const map = L.map("map").setView([43.60, 144.46], 10);
+const map=L.map("map").setView([43.60,144.46],10);
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-
-  maxZoom: 18
-
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom:18
 }).addTo(map);
 
-let markers = {};
+let markers={};
+let activeSpot=null;
 
-let activeSpot = null;
-
-function createMarkerIcon(id, selected = false) {
-
+function createMarkerIcon(id,selected=false,type="観光"){
   return L.divIcon({
-
-    className: "",
-
-    html: `<div class="marker-pin ${selected ? 'selected' : ''}">
-
-             <span>${id}</span>
-
-           </div>`,
-
-    iconSize: [38, 38],
-
-    iconAnchor: [19, 38],
-
-    popupAnchor: [0, -35]
-
+    className:"",
+    html:`<div class="marker-pin ${type==="飲食店"?"restaurant":""} ${selected?"selected":""}">
+      <span>${type==="飲食店"?"食":id}</span>
+    </div>`,
+    iconSize:[38,38],
+    iconAnchor:[19,38],
+    popupAnchor:[0,-35]
   });
-
 }
 
-spots.forEach(spot => {
-
-  const marker = L.marker([spot.lat, spot.lng], {
-
-    icon: createMarkerIcon(spot.id)
-
+spots.forEach(spot=>{
+  const marker=L.marker([spot.lat,spot.lng],{
+    icon:createMarkerIcon(spot.id,false,spot.type)
   }).addTo(map);
 
   marker.bindPopup(`<strong>${spot.name}</strong><br>${spot.subtitle}`);
-
-  marker.on("click", () => selectSpot(spot.id));
-
-  markers[spot.id] = marker;
-
+  marker.on("click",()=>selectSpot(spot.id));
+  markers[spot.id]=marker;
 });
 
-function selectSpot(id) {
+function selectSpot(id){
+  const spot=spots.find(s=>s.id===id);
+  if(!spot)return;
 
-  const spot = spots.find(s => s.id === id);
+  activeSpot=id;
 
-  if (!spot) return;
-
-  activeSpot = id;
-
-  Object.keys(markers).forEach(key => {
-
-    markers[key].setIcon(createMarkerIcon(Number(key), Number(key) === id));
-
+  Object.keys(markers).forEach(key=>{
+    const s=spots.find(x=>x.id===Number(key));
+    markers[key].setIcon(createMarkerIcon(
+      Number(key),
+      Number(key)===id,
+      s.type
+    ));
   });
 
-  map.flyTo([spot.lat, spot.lng], 13, {
-
-    duration: 1.1
-
-  });
-
+  map.flyTo([spot.lat,spot.lng],13,{duration:1.1});
   markers[id].openPopup();
 
-  document.querySelectorAll(".spot-item").forEach(el => {
-
-    el.classList.toggle("active", Number(el.dataset.id) === id);
-
+  document.querySelectorAll(".spot-item").forEach(el=>{
+    el.classList.toggle("active",Number(el.dataset.id)===id);
   });
 
-  const card = document.getElementById("spot-card");
-
+  const card=document.getElementById("spot-card");
   card.classList.add("show");
 
-  document.getElementById("card-tag").textContent = spot.tag;
+  document.getElementById("card-tag").textContent=spot.tag;
+  document.getElementById("card-title").textContent=spot.name;
+  document.getElementById("card-description").textContent=spot.description;
 
-  document.getElementById("card-title").textContent = spot.name;
+  document.getElementById("card-access").innerHTML=
+    "<strong>所在地・アクセス</strong><br>"+spot.access;
 
-  document.getElementById("card-description").textContent = spot.description;
+  const image=document.getElementById("card-image");
+  image.src=spot.image;
+  image.alt=spot.imageAlt;
 
-  document.getElementById("card-access").innerHTML =
+  document.getElementById("card-map-link").href=spot.map;
 
-    "<strong>アクセス</strong><br>" + spot.access;
-
-  const image = document.getElementById("card-image");
-
-  image.src = spot.image;
-
-  image.alt = spot.imageAlt;
-
-  document.getElementById("card-map-link").href = spot.map;
-
-  if (window.innerWidth < 900) {
-
-    card.scrollIntoView({
-
-      behavior: "smooth",
-
-      block: "start"
-
-    });
-
+  if(window.innerWidth<900){
+    card.scrollIntoView({behavior:"smooth",block:"start"});
   }
-
 }
 
-function closeCard() {
-
+function closeCard(){
   document.getElementById("spot-card").classList.remove("show");
+  activeSpot=null;
 
-  activeSpot = null;
-
-  document.querySelectorAll(".spot-item").forEach(el => {
-
+  document.querySelectorAll(".spot-item").forEach(el=>{
     el.classList.remove("active");
-
   });
 
-  Object.keys(markers).forEach(key => {
-
-    markers[key].setIcon(createMarkerIcon(Number(key), false));
-
+  Object.keys(markers).forEach(key=>{
+    const s=spots.find(x=>x.id===Number(key));
+    markers[key].setIcon(createMarkerIcon(Number(key),false,s.type));
     markers[key].closePopup();
-
   });
-
 }
 
-function openLightbox() {
-
-  const src = document.getElementById("card-image").src;
-
-  if (!src) return;
-
-  document.getElementById("lightbox-image").src = src;
-
+function openLightbox(){
+  const src=document.getElementById("card-image").src;
+  if(!src)return;
+  document.getElementById("lightbox-image").src=src;
   document.getElementById("lightbox").classList.add("show");
-
 }
 
-function closeLightbox() {
-
+function closeLightbox(){
   document.getElementById("lightbox").classList.remove("show");
-
 }
 
-document.addEventListener("keydown", e => {
-
-  if (e.key === "Escape") {
-
-    closeLightbox();
-
-  }
-
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape")closeLightbox();
 });
 
 // Spot list
+const listContainer=document.getElementById("spot-list-items");
 
-const listContainer = document.getElementById("spot-list-items");
+spots.forEach(spot=>{
+  const item=document.createElement("div");
+  item.className="spot-item";
+  item.dataset.id=spot.id;
 
-spots.forEach(spot => {
-
-  const item = document.createElement("div");
-
-  item.className = "spot-item";
-
-  item.dataset.id = spot.id;
-
-  item.innerHTML = `
-
+  item.innerHTML=`
     <img src="${spot.image}" alt="${spot.imageAlt}" loading="lazy">
-
     <div>
-
       <div class="name">${spot.name}</div>
-
+      <div class="type">${spot.type}</div>
       <div class="sub">${spot.subtitle}</div>
-
     </div>
-
   `;
 
-  item.addEventListener("click", () => selectSpot(spot.id));
-
+  item.addEventListener("click",()=>selectSpot(spot.id));
   listContainer.appendChild(item);
-
 });
 
 // Route list
+const routeContainer=document.getElementById("route-stops");
 
-const routeContainer = document.getElementById("route-stops");
+routeOrder.forEach((id,index)=>{
+  const spot=spots.find(s=>s.id===id);
+  const el=document.createElement("div");
+  el.className="route-stop";
 
-routeOrder.forEach((id, index) => {
-
-  const spot = spots.find(s => s.id === id);
-
-  const el = document.createElement("div");
-
-  el.className = "route-stop";
-
-  el.innerHTML = `
-
-    <div class="route-number">${index + 1}</div>
-
+  el.innerHTML=`
+    <div class="route-number">${index+1}</div>
     <div>
-
       <strong>${spot.name}</strong>
-
       <p>${spot.subtitle}</p>
-
     </div>
-
   `;
 
-  el.style.cursor = "pointer";
-
-  el.addEventListener("click", () => selectSpot(spot.id));
-
+  el.style.cursor="pointer";
+  el.addEventListener("click",()=>selectSpot(spot.id));
   routeContainer.appendChild(el);
-
 });
 
 // Route display
+function showRoute(){
+  const routeSpots=routeOrder.map(id=>spots.find(s=>s.id===id));
 
-function showRoute() {
+  const bounds=L.latLngBounds(routeSpots.map(s=>[s.lat,s.lng]));
 
-  const routeSpots = routeOrder.map(id =>
+  map.fitBounds(bounds,{padding:[50,50],maxZoom:11});
 
-    spots.find(s => s.id === id)
-
-  );
-
-  const bounds = L.latLngBounds(
-
-    routeSpots.map(s => [s.lat, s.lng])
-
-  );
-
-  map.fitBounds(bounds, {
-
-    padding: [50, 50],
-
-    maxZoom: 11
-
+  document.getElementById("map-section").scrollIntoView({
+    behavior:"smooth"
   });
-
-  const section = document.getElementById("map-section");
-
-  section.scrollIntoView({
-
-    behavior: "smooth"
-
-  });
-
 }
 
 // Default view
-
-setTimeout(() => {
-
-  map.invalidateSize();
-
-}, 300);
+setTimeout(()=>map.invalidateSize(),300);
 
 </script>
-
 </body>
-
 </html>
+
